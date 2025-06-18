@@ -1,119 +1,26 @@
-name: 'Add Linear Label'
-description: 'Adds a label to a Linear issue'
-inputs:
-  label_name:
-    description: 'Name of the label to add'
-    required: true
-  linear_issue_id:
-    description: 'Linear Issue ID'
-    required: true
+name: "Add Label to linear"
+author: "chowhdaryshivi"
+
+inputs: 
   linear_api_key:
-    description: 'Linear API Key'
     required: true
-runs:
-  using: "node16"
-  main: "dist/index.js"
+    description: "Linear API Key"
+  label:
+    required: true
+    description: "Label to add"
+  branch:
+    required: true
+    description: "Branch name"
+  pr_title:
+    required: true
+    description: "PR title"
 
-  steps:
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-        cache: 'npm'
+runs: 
+  using: "docker"
+  image: "Dockerfile"
+  env:
+    LINEAR_API_KEY: ${{ inputs.linear_api_key }}
+    LINEAR_LABEL: ${{ inputs.label }}
+    BRANCH_NAME: ${{ inputs.branch }}
+    PR_TITLE: ${{ inputs.pr_title }}
 
-    - name: Install dependencies
-      shell: bash
-      run: |
-        npm install @linear/sdk typescript @types/node dotenv
-
-    - name: Create action file
-      shell: bash
-      run: |
-        mkdir -p src
-        cat > src/addLinearLabel.ts << 'EOL'
-        import { LinearClient } from "@linear/sdk";
-        import * as dotenv from "dotenv";
-
-        dotenv.config();
-
-        interface AddLabelParams {
-          labelName: string;
-          linearId: string;
-          linearApiKey: string;
-        }
-
-        export async function addLinearLabel({ labelName, linearId, linearApiKey }: AddLabelParams): Promise<void> {
-          try {
-            const linearClient = new LinearClient({
-              apiKey: linearApiKey,
-            });
-
-            const issue = await linearClient.issue(linearId);
-            if (!issue) {
-              throw new Error(`Issue with ID ${linearId} not found`);
-            }
-
-            const labels = await linearClient.issueLabels();
-            const label = labels.nodes.find(l => l.name.toLowerCase() === labelName.toLowerCase());
-            if (!label) {
-              throw new Error(`Label "${labelName}" not found`);
-            }
-
-            await linearClient.updateIssue(linearId, {
-              labelIds: [...(await issue.labels()).nodes.map(l => l.id), label.id],
-            });
-
-            console.log(`Successfully added label "${labelName}" to issue ${linearId}`);
-          } catch (error) {
-            console.error("Error adding label to Linear issue:", error);
-            throw error;
-          }
-        }
-
-        if (require.main === module) {
-          const labelName = process.argv[2];
-          const linearId = process.argv[3];
-          const linearApiKey = process.env.LINEAR_API_KEY;
-
-          if (!labelName || !linearId || !linearApiKey) {
-            console.error("Usage: node addLinearLabel.js <labelName> <linearId>");
-            console.error("Make sure LINEAR_API_KEY is set in your environment variables");
-            process.exit(1);
-          }
-
-          addLinearLabel({
-            labelName,
-            linearId,
-            linearApiKey,
-          }).catch(console.error);
-        }
-        EOL
-
-    - name: Create tsconfig
-      shell: bash
-      run: |
-        cat > tsconfig.json << 'EOL'
-        {
-          "compilerOptions": {
-            "target": "es2016",
-            "module": "commonjs",
-            "outDir": "./dist",
-            "strict": true,
-            "esModuleInterop": true,
-            "skipLibCheck": true,
-            "forceConsistentCasingInFileNames": true
-          },
-          "include": ["src/**/*"]
-        }
-        EOL
-
-    - name: Build TypeScript
-      shell: bash
-      run: npx tsc
-
-    - name: Add Linear Label
-      shell: bash
-      env:
-        LINEAR_API_KEY: ${{ inputs.linear_api_key }}
-      run: |
-        node dist/addLinearLabel.js "${{ inputs.label_name }}" "${{ inputs.linear_issue_id }}" 
