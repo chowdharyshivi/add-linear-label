@@ -1,0 +1,22 @@
+name: Add Codex Label to Linear Issue
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  add-linear-label:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run custom Linear label adder
+        uses: chowdharyshivi/add-linear-label@main 
+        with:
+          pr_title: ${{ github.event.pull_request.title }}
+          branch_name: ${{ github.event.pull_request.head.ref }}
+          linear_api_key: ${{ secrets.LINEAR_API_KEY }}
+          linear_label: codex
