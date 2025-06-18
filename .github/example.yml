@@ -19,4 +19,4 @@ jobs:
           pr_title: ${{ github.event.pull_request.title }}
           branch_name: ${{ github.event.pull_request.head.ref }}
           linear_api_key: ${{ secrets.LINEAR_API_KEY }}
-          linear_label: codex
+          linear_label: "your-label"
