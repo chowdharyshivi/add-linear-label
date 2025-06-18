@@ -1,0 +1,36 @@
+name: Example Usage
+
+on:
+  workflow_dispatch:
+    inputs:
+      label_name:
+        description: 'Name of the label to add'
+        required: true
+        default: 'codex'
+      linear_issue_id:
+        description: 'Linear Issue ID'
+        required: true
+        default: 'ENG-2355'
+
+jobs:
+  add-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Using the action from the same repository
+      - name: Add Linear Label
+        uses: ./
+        with:
+          label_name: ${{ github.event.inputs.label_name }}
+          linear_issue_id: ${{ github.event.inputs.linear_issue_id }}
+          linear_api_key: ${{ secrets.LINEAR_API_KEY }}
+
+      # Example of using the action in a different workflow
+      - name: Add another label
+        uses: ./
+        with:
+          label_name: 'in-progress'
+          linear_issue_id: ${{ github.event.inputs.linear_issue_id }}
+          linear_api_key: ${{ secrets.LINEAR_API_KEY }} 
