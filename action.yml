@@ -5,10 +5,10 @@ inputs:
   linear_api_key:
     required: true
     description: "Linear API Key"
-  label:
+  linear_label:
     required: true
     description: "Label to add"
-  branch:
+  branch_name:
     required: true
     description: "Branch name"
   pr_title:
@@ -20,7 +20,7 @@ runs:
   image: "Dockerfile"
   env:
     LINEAR_API_KEY: ${{ inputs.linear_api_key }}
-    LINEAR_LABEL: ${{ inputs.label }}
-    BRANCH_NAME: ${{ inputs.branch }}
+    LINEAR_LABEL: ${{ inputs.linear_label }}
+    BRANCH_NAME: ${{ inputs.branch_name }}
     PR_TITLE: ${{ inputs.pr_title }}
 
