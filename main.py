@@ -100,7 +100,7 @@ def main():
         print(f"🔍 Extracting Linear ID from PR title: {PR_TITLE}")
 
         # Check if branch starts with 'codex/'
-        if not BRANCH_NAME or not BRANCH_NAME.startswith("codex/") or not BRANCH_NAME.startswith("cursor/"):
+        if not BRANCH_NAME or not BRANCH_NAME.startswith(("codex/", "cursor/")):
             print("ℹ️ Branch name does not start with 'codex/' or 'cursor/'. Skipping label addition.")
             return
 
