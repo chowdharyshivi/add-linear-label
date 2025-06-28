@@ -120,6 +120,8 @@ def main():
             print(f"❌ Invalid Linear issue ID: {LINEAR_ID}")
             sys.exit(1)
 
+        if LINEAR_LABEL == 'codex':
+            LINEAR_LABEL = "Executed by Codex"
         label_id = get_label_id(LINEAR_LABEL, headers)
         if not label_id:
             print(f"❌ Label '{LINEAR_LABEL}' not found.")
