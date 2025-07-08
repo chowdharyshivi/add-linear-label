@@ -98,6 +98,7 @@ def main():
     try:
         print(f"🔍 Branch name: {BRANCH_NAME}")
         print(f"🔍 Extracting Linear ID from PR title: {PR_TITLE}")
+        print(f"Linear label: {LINEAR_LABEL}")
 
         # Check if branch starts with 'codex/'
         if not BRANCH_NAME or not BRANCH_NAME.startswith(("codex/", "cursor/")):
@@ -105,7 +106,7 @@ def main():
             return
 
         LINEAR_ID = extract_linear_id(PR_TITLE)
-        if not LINEAR_API_KEY or not LINEAR_ID or not LINEAR_LABEL:
+        if not LINEAR_API_KEY or not LINEAR_ID:
             print("❌ Missing required input(s).")
             sys.exit(1)
 
@@ -121,10 +122,10 @@ def main():
             sys.exit(1)
 
         if LINEAR_LABEL == 'codex':
-            LINEAR_LABEL = "Executed by Codex"
-        label_id = get_label_id(LINEAR_LABEL, headers)
+            label = "Executed by Codex"
+        label_id = get_label_id(label, headers)
         if not label_id:
-            print(f"❌ Label '{LINEAR_LABEL}' not found.")
+            print(f"❌ Label '{label}' not found.")
             sys.exit(1)
 
         print(f"🧾 Label ID: {label_id}")
@@ -132,7 +133,7 @@ def main():
 
         success = add_label_to_issue(issue_uuid, label_id, headers)
         if success:
-            print(f"✅ Label '{LINEAR_LABEL}' added to issue {LINEAR_ID}")
+            print(f"✅ Label '{label}' added to issue {LINEAR_ID}")
         else:
             print("❌ Failed to add label to the issue.")
             sys.exit(1)
