@@ -54,23 +54,43 @@ def run_query(query, headers):
         sys.exit(1)
 
 def get_label_id(label_name, headers):
-    query = """
-    query {
-        issueLabels(first: 50){
-            nodes{ 
-                id
-                name
-                }
-        }
-    }
+    labels = []
+    has_next_page = True
+    after_cursor = None
 
-"""
-    result = run_query(query, headers)
-    labels = result.get("data", {}).get("issueLabels", {}).get("nodes", [])
+    while has_next_page:
+        after_clause = f', after: "{after_cursor}"' if after_cursor else ""
+        query = f"""
+        query {{
+            issueLabels(first: 50{after_clause}) {{
+                nodes {{
+                    id
+                    name
+                }}
+                pageInfo {{
+                    hasNextPage
+                    endCursor
+                }}
+            }}
+        }}
+        """
+        result = run_query(query, headers)
+        data = result.get("data", {}).get("issueLabels", {})
+        nodes = data.get("nodes", [])
+        labels.extend(nodes)
+
+        # Update pagination info
+        page_info = data.get("pageInfo", {})
+        has_next_page = page_info.get("hasNextPage", False)
+        after_cursor = page_info.get("endCursor")
+
+    # Search for label
     for label in labels:
         if label["name"].lower() == label_name.lower():
             return label["id"]
+
     return None
+
 
 def add_label_to_issue(issue_id, label_id, headers):
     query = """
@@ -124,6 +144,7 @@ def main():
         if LINEAR_LABEL == 'codex':
             label = "Executed by Codex"
         label_id = get_label_id(label, headers)
+        print(label_id)
         if not label_id:
             print(f"❌ Label '{label}' not found.")
             sys.exit(1)
